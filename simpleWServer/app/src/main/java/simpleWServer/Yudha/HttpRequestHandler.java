@@ -35,7 +35,14 @@ public class HttpRequestHandler {
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
             InetAddress address = InetAddress.getLocalHost();
-            String ip = address.getHostAddress();
+            String httpPrefix;
+            if (clientSocket.getInetAddress().getHostAddress().equals("127.0.0.1") || clientSocket.getInetAddress().getHostAddress().equals("0:0:0:0:0:0:0:1")) {
+                // Jika berjalan di localhost
+                httpPrefix = "http://localhost:";
+            } else {
+                // Jika berjalan di alamat IP fisik
+                httpPrefix = "http://" + clientSocket.getInetAddress().getHostAddress() + ":";
+}
 
             String request = in.readLine();
             if (request != null && request.startsWith("GET")) {
@@ -57,7 +64,7 @@ public class HttpRequestHandler {
                             
 
                             out.println("HTTP/1.1 302 Found");
-                            out.println("Location: http://localhost:" +  port + url + "/index.html");
+                            out.println("Location: " + httpPrefix + port + url + "/index.html");
                             out.println();
                             clientSocket.getOutputStream().write(data, 0, data.length);
                             clientSocket.getOutputStream().flush();
@@ -72,12 +79,12 @@ public class HttpRequestHandler {
                             if (parentPath.isEmpty()) {
                                 parentPath = "/";
                             }
-                            response.append("<li><a href=\"http://localhost").append(":").append(port).append(parentPath).append("\">...Back</a></li>");
+                            response.append("<li><a href=\"").append(httpPrefix).append(port).append(parentPath).append("\">...Back</a></li>");
                         }
 
                         for (String filename : files) {
                             path = url.equals("/") ? url + filename : url + "/" + filename;
-                            response.append("<li><a href=\"http://localhost:").append(port).append(path).append("\">").append(filename).append("</a></li>");
+                            response.append("<li><a href=\"").append(httpPrefix).append(port).append(path).append("\">").append(filename).append("</a></li>");
                         }
 
                         response.append("</ul></body></html>");
